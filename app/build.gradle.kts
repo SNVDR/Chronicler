@@ -1,8 +1,19 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    kotlin("kapt")
-    id ("dagger.hilt.android.plugin")
+    id("dagger.hilt.android.plugin")
+    id("com.google.devtools.ksp")
+}
+
+kotlin {
+    sourceSets {
+        debug {
+            kotlin.srcDir("build/generated/ksp/debug/kotlin")
+        }
+        release {
+            kotlin.srcDir("build/generated/ksp/release/kotlin")
+        }
+    }
 }
 
 android {
@@ -42,10 +53,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
-    }
-    kapt {
-        correctErrorTypes = true
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
     packaging {
         resources {
@@ -56,11 +64,13 @@ android {
 
 dependencies {
 
+    implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
+    ksp("io.github.raamcosta.compose-destinations:ksp:1.1.2-beta"   )
     // Compose dependencies
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha03")
-    implementation ("androidx.navigation:navigation-compose:2.7.4")
-    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.1.0-rc01")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha03")
+    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0-rc01")
 
 
     //Image loader
@@ -69,16 +79,15 @@ dependencies {
     //Hilt
     val hilt_version = "2.48"
     implementation("com.google.dagger:hilt-android:$hilt_version")
-    kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
-    kapt ("androidx.hilt:hilt-compiler:1.0.0")
-
+    ksp("com.google.dagger:hilt-android-compiler:$hilt_version")
+    ksp("androidx.hilt:hilt-compiler:1.0.0")
 
 
     //Room
     val room_version = "2.6.0"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
-    kapt("androidx.room:room-compiler:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
 
 
     implementation("androidx.core:core-ktx:1.9.0")

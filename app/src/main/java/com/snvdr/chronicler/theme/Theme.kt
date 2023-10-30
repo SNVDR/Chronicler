@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.presentation.theme
+package com.snvdr.chronicler.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,10 +1,12 @@
-package com.snvdr.chronicler.presentation
+package com.snvdr.chronicler
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.snvdr.chronicler.presentation.NavGraphs
 import com.snvdr.chronicler.presentation.main_screen.ChronicleMainScreen
-import com.snvdr.chronicler.presentation.theme.ChroniclerTheme
+import com.snvdr.chronicler.theme.ChroniclerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -13,7 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ChroniclerTheme {
-                ChronicleMainScreen()
+                DestinationsNavHost(navGraph = NavGraphs.root)
             }
         }
     }

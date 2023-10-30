@@ -6,6 +6,7 @@ import com.snvdr.chronicler.domain.ChronicleRepository
 import com.snvdr.chronicler.domain.toChronicleDbEntity
 import com.snvdr.chronicler.domain.toChronicleDto
 import com.snvdr.chronicler.utils.DataHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -22,7 +23,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
-    override suspend fun getSpecificChronicle(id: Long): Flow<DataHandler<ChronicleDto>> = flow {
+    override  fun getSpecificChronicle(id: Long): Flow<DataHandler<ChronicleDto>> = flow {
         emit(DataHandler.Loading())
         try {
             val chronicle = dao.getSpecificChronicle(id = id).toChronicleDto()
@@ -32,8 +33,22 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
-    override suspend fun createChronicle(chronicle: ChronicleDto): Flow<DataHandler<Unit>> = flow{
+    override fun updateChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>> = flow{
         emit(DataHandler.Loading())
+        //TODO Simulate delay of updating data
+        delay(3000L)
+        try {
+            dao.updateChronicle(chronicle = chronicleDto.toChronicleDbEntity())
+            emit(DataHandler.Success(Unit))
+        }catch (e:Exception){
+            emit(DataHandler.Error(message = e.localizedMessage?:"Error create chronicle"))
+        }
+    }
+
+    override  fun createChronicle(chronicle: ChronicleDto): Flow<DataHandler<Unit>> = flow{
+        emit(DataHandler.Loading())
+        //TODO Simulate delay of getting data
+        delay(3000L)
         try {
             dao.insertChronicle(chronicle.toChronicleDbEntity())
             emit(DataHandler.Success(Unit))
@@ -42,7 +57,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
-    override suspend fun deleteAllChronicles(): Flow<DataHandler<Unit>> = flow {
+    override  fun deleteAllChronicles(): Flow<DataHandler<Unit>> = flow {
         emit(DataHandler.Loading())
         try {
             dao.deleteAllChronicles()
@@ -52,7 +67,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
-    override suspend fun deleteSpecificChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>> = flow{
+    override  fun deleteSpecificChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>> = flow{
         emit(DataHandler.Loading())
         try {
             dao.deleteSpecificChronicle(chronicle = chronicleDto.toChronicleDbEntity())
