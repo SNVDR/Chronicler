@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.snvdr.chronicler.presentation.NavGraphs
-import com.snvdr.chronicler.presentation.main_screen.ChronicleMainScreen
 import com.snvdr.chronicler.theme.ChroniclerTheme
 import dagger.hilt.android.AndroidEntryPoint
 

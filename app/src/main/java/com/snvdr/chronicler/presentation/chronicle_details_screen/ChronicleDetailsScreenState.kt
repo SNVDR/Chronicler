@@ -1,6 +1,6 @@
 package com.snvdr.chronicler.presentation.chronicle_details_screen
 
-data class ChronicleDetailsScreenUIState(
+data class ChronicleDetailsScreenState(
     val isLoading:Boolean = false,
     val isError:String? = null,
     val title:String = "",

@@ -1,5 +1,6 @@
 package com.snvdr.chronicler.presentation.main_screen
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,8 +10,6 @@ import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
 import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesUseCase
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -18,41 +17,37 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MainScreenViewModel @Inject constructor(
     private val createChronicleUseCase: CreateChronicleUseCase,
     private val getAllChroniclesUseCase: GetAllChroniclesUseCase
 ):ViewModel() {
 
-    private val _mainScreenUIState = mutableStateOf(MainScreenUIState())
-    val mainScreenUIState:State<MainScreenUIState> = _mainScreenUIState
-
-    private var getChroniclesJob:Job? = null
+    private val _chroniclesListScreenState = mutableStateOf(ChroniclesListScreenState())
+    val chroniclesListScreenState:State<ChroniclesListScreenState> = _chroniclesListScreenState
 
     init {
         getChronicles()
+        Log.d("VM_LOG","init")
     }
 
-    fun getChronicles(){
-        getChroniclesJob?.cancel()
-        getChroniclesJob = getAllChroniclesUseCase()
-            .onEach {chronicle->
+    private fun getChronicles(){ getAllChroniclesUseCase().onEach { chronicle->
                when(chronicle){
                    is DataHandler.Error -> {
-                       _mainScreenUIState.value = mainScreenUIState.value.copy(
+                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                            isLoading = false,
                            isError = chronicle.message?:"Unknown error",
                            chronicles = emptyList()
                        )
                    }
                    is DataHandler.Loading -> {
-                       _mainScreenUIState.value = mainScreenUIState.value.copy(
+                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                            isLoading = true,
                            isError = null,
                            chronicles = emptyList()
                        )
                    }
                    is DataHandler.Success -> {
-                       _mainScreenUIState.value = mainScreenUIState.value.copy(
+                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                            isLoading = false,
                            isError = null,
                            chronicles = chronicle.data?: emptyList()
@@ -63,25 +58,25 @@ class MainViewModel @Inject constructor(
     }
 
     fun addData() = viewModelScope.launch{
-        val fakeData = ChronicleDto(Random.nextLong(),"Mock title","Mock content")
+        val fakeData = ChronicleDto(Random.nextLong(),"Mock title","Mock content","1488")
         createChronicleUseCase(fakeData).onEach {
             when(it){
                 is DataHandler.Error -> {
-                    _mainScreenUIState.value = mainScreenUIState.value.copy(
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = false,
                         isError = it.message?:"Unknown error",
                         chronicles = emptyList()
                     )
                 }
                 is DataHandler.Loading -> {
-                    _mainScreenUIState.value = mainScreenUIState.value.copy(
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = true,
                         isError = null,
                         chronicles = emptyList()
                     )
                 }
                 is DataHandler.Success ->{
-                    _mainScreenUIState.value = mainScreenUIState.value.copy(
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = false,
                         isError = null,
                         chronicles = emptyList()
@@ -90,5 +85,10 @@ class MainViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("VM_LOG","onCleared")
     }
 }

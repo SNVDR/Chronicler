@@ -35,8 +35,6 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
 
     override fun updateChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>> = flow{
         emit(DataHandler.Loading())
-        //TODO Simulate delay of updating data
-        delay(3000L)
         try {
             dao.updateChronicle(chronicle = chronicleDto.toChronicleDbEntity())
             emit(DataHandler.Success(Unit))
