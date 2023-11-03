@@ -14,7 +14,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
     override fun getAllChronicles(): Flow<DataHandler<List<ChronicleDto>>> = flow{
         emit(DataHandler.Loading())
         try {
-            val list = dao.getAllChronicles().map {
+            val list = dao.getEarliestChronicles().map {
                 it.toChronicleDto()
             }
             emit(DataHandler.Success(data = list))
@@ -45,7 +45,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
 
     override  fun createChronicle(chronicle: ChronicleDto): Flow<DataHandler<Unit>> = flow{
         emit(DataHandler.Loading())
-        //TODO Simulate delay of getting data
+        //TODO Simulate delay of creating data
         delay(3000L)
         try {
             dao.insertChronicle(chronicle.toChronicleDbEntity())
@@ -72,6 +72,20 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
             emit(DataHandler.Success(Unit))
         }catch (e:Exception){
             emit(DataHandler.Error(message = e.localizedMessage?:"Error create chronicle"))
+        }
+    }
+
+    override fun searchDatabase(query: String): Flow<DataHandler<List<ChronicleDto>>> = flow{
+        emit(DataHandler.Loading())
+        //TODO Search delay
+        delay(1000L)
+        try {
+            val list =  dao.searchDatabase(query = "%$query%").map {
+                it.toChronicleDto()
+            }
+            emit(DataHandler.Success(data = list))
+        }catch (e:Exception){
+            emit(DataHandler.Error(message = e.localizedMessage?:"Error get filtered data"))
         }
     }
 }

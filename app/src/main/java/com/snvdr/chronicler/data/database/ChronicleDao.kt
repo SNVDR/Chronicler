@@ -29,4 +29,13 @@ interface ChronicleDao {
     @Delete
     suspend fun deleteSpecificChronicle(chronicle: ChronicleDbEntity)
 
+    @Query("SELECT * FROM chronicle_table WHERE title LIKE :query")
+    suspend fun searchDatabase(query:String):List<ChronicleDbEntity>
+
+    @Query("SELECT * FROM chronicle_table ORDER by date DESC")
+    suspend fun getLatestChronicles():List<ChronicleDbEntity>
+
+    @Query("SELECT * FROM chronicle_table ORDER by date ASC")
+    suspend fun getEarliestChronicles():List<ChronicleDbEntity>
+
 }

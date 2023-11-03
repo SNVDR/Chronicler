@@ -10,5 +10,6 @@ interface ChronicleRepository {
     fun updateChronicle(chronicleDto: ChronicleDto):Flow<DataHandler<Unit>>
     fun deleteAllChronicles(): Flow<DataHandler<Unit>>
     fun deleteSpecificChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>>
+    fun searchDatabase(query:String):Flow<DataHandler<List<ChronicleDto>>>
 
 }

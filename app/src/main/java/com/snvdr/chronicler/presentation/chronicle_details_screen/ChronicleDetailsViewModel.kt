@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.snvdr.chronicler.domain.ChronicleDto
 import com.snvdr.chronicler.domain.use_cases.GetChronicleByIdUseCase
 import com.snvdr.chronicler.domain.use_cases.UpdateChronicleUseCase
-import com.snvdr.chronicler.presentation.destinations.ChronicleDetailsScreenDestination
+import com.snvdr.chronicler.presentation.destinations.ChronicleDetailsScreenWrapperDestination
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +29,7 @@ class ChronicleDetailsViewModel @Inject constructor(
     private val _screenState = MutableStateFlow(ChronicleDetailsScreenState())
     val screenState = _screenState.asStateFlow()
 
-    private val argsFromScreen = ChronicleDetailsScreenDestination.argsFrom(savedStateHandle)
+    private val argsFromScreen = ChronicleDetailsScreenWrapperDestination.argsFrom(savedStateHandle)
 
     init {
         getChronicleById()
