@@ -1,12 +1,11 @@
 package com.snvdr.chronicler.presentation.chronicle_details_screen
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,8 +14,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Deck
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.snvdr.chronicler.theme.ChroniclerTheme
 
 
 @Destination(navArgsDelegate = ChronicleDetailsScreenArgs::class)
@@ -53,18 +55,44 @@ fun ChronicleDetailsScreenWrapper(
 
 }
 
-@Preview(showSystemUi = true)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    name = "DefaultPreviewDark"
+)
 @Composable
 fun ChroniclesDetailsPreview() {
     val state = ChronicleDetailsScreenState(
         title = "Preview title",
         content = "Preview content"
     )
-    ChronicleDetailsScreen(
-        screenState = state,
-        onBackArrowClick = { /*TODO*/ }
-    ) {
+    ChroniclerTheme {
+        ChronicleDetailsScreen(
+            screenState = state,
+            onBackArrowClick = { /*TODO*/ }
+        ) {
 
+        }
+    }
+
+}
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+    name = "DefaultPreviewLight"
+)
+@Composable
+fun ChroniclesDetailsPreviewL() {
+    val state = ChronicleDetailsScreenState(
+        title = "Preview title",
+        content = "Preview content"
+    )
+    ChroniclerTheme {
+        ChronicleDetailsScreen(
+            screenState = state,
+            onBackArrowClick = { /*TODO*/ }
+        ) {
+
+        }
     }
 }
 
@@ -82,7 +110,8 @@ fun ChronicleDetailsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(state = scrollState),
+            .verticalScroll(state = scrollState)
+            .background(MaterialTheme.colorScheme.background),
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -97,14 +126,16 @@ fun ChronicleDetailsScreen(
                     .padding(start = 10.dp)
                     .clickable {
                         onBackArrowClick()
-                    }
+                    },
+                tint = MaterialTheme.colorScheme.primaryContainer
             )
             Icon(
                 imageVector = Icons.Default.NotificationAdd,
                 contentDescription = "create notification",
                 modifier = Modifier
                     .size(60.dp)
-                    .padding(end = 10.dp)
+                    .padding(end = 10.dp),
+                tint = MaterialTheme.colorScheme.primaryContainer
             )
         }
         TextField(
@@ -137,6 +168,5 @@ fun ChronicleDetailsScreen(
             ),
             modifier = Modifier.fillMaxWidth(0.97f)
         )
-
     }
 }

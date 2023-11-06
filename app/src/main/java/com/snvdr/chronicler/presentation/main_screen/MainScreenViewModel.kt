@@ -11,10 +11,13 @@ import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
 import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesUseCase
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
@@ -24,102 +27,130 @@ class MainScreenViewModel @Inject constructor(
     private val createChronicleUseCase: CreateChronicleUseCase,
     private val getAllChroniclesUseCase: GetAllChroniclesUseCase,
     private val chronicleRepository: ChronicleRepository
-):ViewModel() {
+) : ViewModel() {
 
     private val _chroniclesListScreenState = mutableStateOf(ChroniclesListScreenState())
-    val chroniclesListScreenState:State<ChroniclesListScreenState> = _chroniclesListScreenState
+    val chroniclesListScreenState: State<ChroniclesListScreenState> = _chroniclesListScreenState
+
+    private val navigationChannel = Channel<NavigationEvent>()
+    val navigationEventsChannelFlow: Flow<NavigationEvent> = navigationChannel.receiveAsFlow()
 
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
-
-    init {
-        getChronicles()
-        Log.d("VM_LOG","init")
-    }
-
-     fun searchChroniclesByQuery(){
+    fun searchChroniclesByQuery() {
         chronicleRepository.searchDatabase(query = _searchText.value).onEach {
-            when(it){
+            when (it) {
                 is DataHandler.Error -> {
                     _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = false,
-                        isError = it.message?:"Unknown error",
+                        isError = it.message ?: "Unknown error",
                         chronicles = emptyList()
                     )
                 }
-                is DataHandler.Loading ->{
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                        isLoading = true,
-                        isError = null,
-                        chronicles = emptyList()
-                    )
-                }
-                is DataHandler.Success -> {
-                    Log.d("SEARCH_LOG","Result is:${it.data}")
-                    getChronicles()
-                }
-            }
-        }.launchIn(viewModelScope)
-    }
 
-    fun onSearchTextChange(text:String){
-        _searchText.value = text
-    }
-     fun getChronicles(){ getAllChroniclesUseCase().onEach { chronicle->
-               when(chronicle){
-                   is DataHandler.Error -> {
-                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                           isLoading = false,
-                           isError = chronicle.message?:"Unknown error",
-                           chronicles = emptyList()
-                       )
-                   }
-                   is DataHandler.Loading -> {
-                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                           isLoading = true,
-                           isError = null,
-                           chronicles = emptyList()
-                       )
-                   }
-                   is DataHandler.Success -> {
-                       _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                           isLoading = false,
-                           isError = null,
-                           chronicles = chronicle.data?: emptyList()
-                       )
-                   }
-               }
-        }.launchIn(viewModelScope)
-    }
-
-    fun addData() = viewModelScope.launch{
-        val fakeData = ChronicleDto(Random.nextLong(),"Mock title","Mock content","1488")
-        createChronicleUseCase(fakeData).onEach {
-            when(it){
-                is DataHandler.Error -> {
-                  /*  _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                        isLoading = false,
-                        isError = it.message?:"Unknown error",
-                        chronicles = emptyList()
-                    )*/
-                }
                 is DataHandler.Loading -> {
-                  /*  _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = true,
                         isError = null,
                         chronicles = emptyList()
-                    )*/
+                    )
                 }
-                is DataHandler.Success ->{
-                 /*   _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+
+                is DataHandler.Success -> {
+                    Log.d("SEARCH_LOG", "Result is:${it.data}")
+                  //  getChronicles()
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
                         isLoading = false,
                         isError = null,
-                        chronicles = emptyList()
+                        chronicles = it.data ?: emptyList()
                     )
-                    getChronicles()*/
                 }
             }
         }.launchIn(viewModelScope)
     }
 
+    fun onSearchTextChange(text: String) {
+        _searchText.value = text
+        if (_searchText.value.isNotEmpty()){
+            _chroniclesListScreenState.value = _chroniclesListScreenState.value.copy(
+                searchingChronicle = true,
+                chronicles = emptyList()
+            )
+        }else{
+            _chroniclesListScreenState.value = _chroniclesListScreenState.value.copy(
+                searchingChronicle = false
+            )
+            getChronicles()
+        }
+    }
+
+    fun getChronicles() {
+        getAllChroniclesUseCase().onEach { chronicle ->
+            when (chronicle) {
+                is DataHandler.Error -> {
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                        isLoading = false,
+                        isError = chronicle.message ?: "Unknown error",
+                        chronicles = emptyList()
+                    )
+                }
+
+                is DataHandler.Loading -> {
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                        isLoading = true,
+                        isError = null,
+                        chronicles = emptyList()
+                    )
+                }
+
+                is DataHandler.Success -> {
+                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                        isLoading = false,
+                        isError = null,
+                        chronicles = chronicle.data ?: emptyList()
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun addData() = viewModelScope.launch {
+        val fakeData = ChronicleDto(Random.nextLong(), "Mock title", "Mock content", "1488")
+        createChronicleUseCase(fakeData).onEach {
+            when (it) {
+                is DataHandler.Error -> {
+                    /*  _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                          isLoading = false,
+                          isError = it.message?:"Unknown error",
+                          chronicles = emptyList()
+                      )*/
+                }
+
+                is DataHandler.Loading -> {
+                    /*  _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                          isLoading = true,
+                          isError = null,
+                          chronicles = emptyList()
+                      )*/
+                }
+
+                is DataHandler.Success -> {
+                    /*   _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                           isLoading = false,
+                           isError = null,
+                           chronicles = emptyList()
+                       )
+                       getChronicles()*/
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+    fun navigateToAnotherScreen(chronicleDto: ChronicleDto) = viewModelScope.launch {
+        navigationChannel.send(NavigationEvent.NavigateToDetailsScreen(chronicleDto = chronicleDto))
+    }
+
+}
+
+sealed interface NavigationEvent {
+    data class NavigateToDetailsScreen(val chronicleDto: ChronicleDto) : NavigationEvent
 }

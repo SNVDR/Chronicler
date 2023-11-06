@@ -46,7 +46,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
     override  fun createChronicle(chronicle: ChronicleDto): Flow<DataHandler<Unit>> = flow{
         emit(DataHandler.Loading())
         //TODO Simulate delay of creating data
-        delay(3000L)
+        delay( 1500L)
         try {
             dao.insertChronicle(chronicle.toChronicleDbEntity())
             emit(DataHandler.Success(Unit))
@@ -78,7 +78,7 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
     override fun searchDatabase(query: String): Flow<DataHandler<List<ChronicleDto>>> = flow{
         emit(DataHandler.Loading())
         //TODO Search delay
-        delay(1000L)
+        delay(500L)
         try {
             val list =  dao.searchDatabase(query = "%$query%").map {
                 it.toChronicleDto()
