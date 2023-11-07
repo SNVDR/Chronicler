@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChronicleDao {
@@ -35,7 +34,13 @@ interface ChronicleDao {
     @Query("SELECT * FROM chronicle_table ORDER by date DESC")
     suspend fun getLatestChronicles():List<ChronicleDbEntity>
 
-    @Query("SELECT * FROM chronicle_table ORDER by date ASC")
-    suspend fun getEarliestChronicles():List<ChronicleDbEntity>
+    @Query("SELECT * FROM chronicle_table ORDER BY CASE WHEN :chronicleOrder = 'date' THEN date END ASC, CASE WHEN :chronicleOrder = 'title' THEN title END ASC")
+    suspend fun getAllChroniclesWithOrderAndAsc(chronicleOrder: String): List<ChronicleDbEntity>
 
+    @Query("SELECT * FROM chronicle_table ORDER BY CASE WHEN :chronicleOrder = 'date' THEN date END DESC, CASE WHEN :chronicleOrder = 'title' THEN title END DESC")
+    suspend fun getAllChroniclesWithOrderAndDesc(chronicleOrder: String): List<ChronicleDbEntity>
+
+
+    //DESC - убывание
+    //ASC - возростание
 }

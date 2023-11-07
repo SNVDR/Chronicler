@@ -5,6 +5,7 @@ import com.snvdr.chronicler.data.database.ChronicleDao
 import com.snvdr.chronicler.domain.ChronicleRepository
 import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
 import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesUseCase
+import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithCustomQuery
 import com.snvdr.chronicler.domain.use_cases.GetChronicleByIdUseCase
 import com.snvdr.chronicler.domain.use_cases.UpdateChronicleUseCase
 import dagger.Module
@@ -35,5 +36,8 @@ object ChronicleModule {
     @Provides
     fun providesUpdateChronicleUseCase(chronicleRepository: ChronicleRepository) =
         UpdateChronicleUseCase(chronicleRepository = chronicleRepository)
+    @Provides
+    fun providesGetAllChroniclesWithCustomQuery(chronicleRepository: ChronicleRepository) =
+        GetAllChroniclesWithCustomQuery(chronicleRepository = chronicleRepository)
 
 }
