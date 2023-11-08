@@ -1,13 +1,10 @@
 package com.snvdr.chronicler.data
 
-import android.util.Log
 import com.snvdr.chronicler.data.database.ChronicleDao
 import com.snvdr.chronicler.data.database.ChronicleDbEntity
 import com.snvdr.chronicler.domain.ChronicleDto
-import com.snvdr.chronicler.domain.ChronicleOrder
 import com.snvdr.chronicler.domain.ChronicleRepository
-import com.snvdr.chronicler.domain.NChronicleOrder
-import com.snvdr.chronicler.domain.NOrderType
+import com.snvdr.chronicler.domain.ChronicleOrder
 import com.snvdr.chronicler.domain.OrderType
 import com.snvdr.chronicler.domain.SaveChronicleModel
 import com.snvdr.chronicler.domain.toChronicleDbEntity
@@ -16,8 +13,11 @@ import com.snvdr.chronicler.utils.DataHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleRepository {
+class ChronicleRepositoryImpl @Inject constructor(
+    private val dao: ChronicleDao
+) : ChronicleRepository {
     override fun getAllChronicles(): Flow<DataHandler<List<ChronicleDto>>> = flow{
         emit(DataHandler.Loading())
         try {
@@ -83,6 +83,16 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
+    override fun deleteSpecificChronicleById(id: Long): Flow<DataHandler<Unit>> = flow {
+        emit(DataHandler.Loading())
+        try {
+            dao.deleteSpecificChronicleById(id = id)
+            emit(DataHandler.Success(Unit))
+        }catch (e:Exception){
+            emit(DataHandler.Error(message = e.localizedMessage?:"Error delete chronicle"))
+        }
+    }
+
     override fun searchDatabase(query: String): Flow<DataHandler<List<ChronicleDto>>> = flow{
         emit(DataHandler.Loading())
         //TODO Search delay
@@ -97,110 +107,74 @@ class ChronicleRepositoryImpl(private val dao: ChronicleDao) : ChronicleReposito
         }
     }
 
-    override fun getChroniclesCustomQuery(
-        chronicleOrder: ChronicleOrder,
-        orderType: OrderType
-    ): Flow<DataHandler<List<ChronicleDto>>> = flow{
-        Log.d("ROOM_LOG","getChroniclesCustomQuery")
+    override fun searchDatabaseWithOrder(
+        query: String,
+        chronicleOrder: ChronicleOrder
+    ): Flow<DataHandler<List<ChronicleDto>>> = flow {
         emit(DataHandler.Loading())
         try {
-
-            val list = when(orderType){
-                OrderType.ASC ->{
+            val list = when(chronicleOrder.orderType){
+                OrderType.Ascending -> {
                     when(chronicleOrder){
-                        ChronicleOrder.date -> {
-                            dao.getAllChroniclesWithOrderAndAsc(ChronicleOrder.date.name).map {
+                        is ChronicleOrder.Date -> {
+                            dao.searchDatabaseWithOrderAndAsc(query = query,chronicleOrder = "date").map {
                                 it.toChronicleDto()
                             }
                         }
-                        ChronicleOrder.title -> {
-                            dao.getAllChroniclesWithOrderAndAsc(ChronicleOrder.title.name).map {
+                        is ChronicleOrder.Title -> {
+                            dao.searchDatabaseWithOrderAndAsc(query = query,chronicleOrder = "title").map {
                                 it.toChronicleDto()
                             }
                         }
                     }
                 }
-                OrderType.DESC -> {
+                OrderType.Descending -> {
                     when(chronicleOrder){
-                        ChronicleOrder.date -> {
-                            dao.getAllChroniclesWithOrderAndDesc(ChronicleOrder.date.name).map {
+                        is ChronicleOrder.Date -> {
+                            dao.searchDatabaseWithOrderAndDesc(query = query,chronicleOrder = "date").map {
                                 it.toChronicleDto()
                             }
                         }
-                        ChronicleOrder.title -> {
-                            dao.getAllChroniclesWithOrderAndDesc(ChronicleOrder.title.name).map {
+                        is ChronicleOrder.Title -> {
+                            dao.searchDatabaseWithOrderAndDesc(query = query,chronicleOrder = "title").map {
                                 it.toChronicleDto()
                             }
                         }
                     }
                 }
             }
-
-
             emit(DataHandler.Success(data = list))
         }catch (e:Exception){
             emit(DataHandler.Error(message = e.localizedMessage?:"Error get list of chronicles from database"))
         }
     }
 
-    override fun newGetChroniclesCustomQuery(nChronicleOrder: NChronicleOrder): Flow<DataHandler<List<ChronicleDto>>>  = flow{
+    override fun getChroniclesWithOrder(chronicleOrder: ChronicleOrder): Flow<DataHandler<List<ChronicleDto>>>  = flow{
         emit(DataHandler.Loading())
         try {
-
-            /*val list = when(orderType){
-                OrderType.ASC ->{
+            val list = when(chronicleOrder.orderType){
+                OrderType.Ascending -> {
                     when(chronicleOrder){
-                        ChronicleOrder.date -> {
-                            dao.getAllChroniclesWithOrderAndAsc(ChronicleOrder.date.name).map {
-                                it.toChronicleDto()
-                            }
-                        }
-                        ChronicleOrder.title -> {
-                            dao.getAllChroniclesWithOrderAndAsc(ChronicleOrder.title.name).map {
-                                it.toChronicleDto()
-                            }
-                        }
-                    }
-                }
-                OrderType.DESC -> {
-                    when(chronicleOrder){
-                        ChronicleOrder.date -> {
-                            dao.getAllChroniclesWithOrderAndDesc(ChronicleOrder.date.name).map {
-                                it.toChronicleDto()
-                            }
-                        }
-                        ChronicleOrder.title -> {
-                            dao.getAllChroniclesWithOrderAndDesc(ChronicleOrder.title.name).map {
-                                it.toChronicleDto()
-                            }
-                        }
-                    }
-                }
-            }*/
-
-            val list = when(nChronicleOrder.nOrderType){
-                NOrderType.Ascending -> {
-                    when(nChronicleOrder){
-                        is NChronicleOrder.Date -> {
+                        is ChronicleOrder.Date -> {
                             dao.getAllChroniclesWithOrderAndAsc("date").map {
                                 it.toChronicleDto()
                             }
                         }
-                        is NChronicleOrder.Title -> {
+                        is ChronicleOrder.Title -> {
                             dao.getAllChroniclesWithOrderAndAsc("title").map {
                                 it.toChronicleDto()
                             }
                         }
                     }
                 }
-                NOrderType.Descending -> {
-                    when(nChronicleOrder){
-                        is NChronicleOrder.Date -> {
+                OrderType.Descending -> {
+                    when(chronicleOrder){
+                        is ChronicleOrder.Date -> {
                             dao.getAllChroniclesWithOrderAndDesc("date").map {
                                 it.toChronicleDto()
                             }
                         }
-                        is NChronicleOrder.Title -> {
+                        is ChronicleOrder.Title -> {
                             dao.getAllChroniclesWithOrderAndDesc("title").map {
                                 it.toChronicleDto()
                             }

@@ -1,8 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.snvdr.chronicler.presentation.list_screen
 
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,26 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,225 +32,146 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.snvdr.chronicler.domain.ChronicleDto
-import com.snvdr.chronicler.domain.NChronicleOrder
-import com.snvdr.chronicler.domain.NOrderType
-import com.snvdr.chronicler.presentation.destinations.AddUpdateScreenWrapperDestination
-import com.snvdr.chronicler.utils.ObserveAsEvents
-import kotlinx.coroutines.flow.Flow
+import com.snvdr.chronicler.domain.ChronicleOrder
+import com.snvdr.chronicler.domain.OrderType
 
 @Composable
-@Destination(start = true)
-fun ChronicleListScreenWrapper(navigator: DestinationsNavigator) {
-    val viewModel = hiltViewModel<MainScreenViewModel>()
-    val searchText by viewModel.searchText.collectAsState()
-    val screenState by viewModel.chroniclesListScreenState
-    val events = viewModel.listScreenNavigationEventsChannelFlow
-
-    ChronicleListScreen(
-        screenState = screenState,
-        events = events,
-        searchText = searchText,
-        onAddItemClick = {
-            viewModel.navigateToAnotherScreen(null)
-        }, onChronicleClick = {
-            viewModel.navigateToAnotherScreen(it)
-        }, onSearchTextChanged = {
-            viewModel.onSearchTextChange(it)
-        }, onSearchClick = {
-            viewModel.searchChroniclesByQuery()
-        }, onResume = {
-            Log.d("ROOM_LOG", "onResume")
-            viewModel.getAllChroniclesWithCustomQuery()
-        }, onNavigate = {
-            if (it != null) {
-                navigator.navigate(
-                    AddUpdateScreenWrapperDestination(
-                        chronicleId = it.id.toString()
-                    )
-                )
-            } else {
-                navigator.navigate(
-                    AddUpdateScreenWrapperDestination(
-                        chronicleId = null
-                    )
-                )
-            }
-        }, onOrderChange = {
-            viewModel.onEvent(ListScreenEvents.Order(it))
-        })
-}
-
-@Composable
-fun ChronicleListScreen(
-    screenState: ChroniclesListScreenState,
-    events: Flow<ListScreenNavigationEvents>,
-    searchText: String,
-    onAddItemClick: () -> Unit,
-    onChronicleClick: (ChronicleDto) -> Unit,
-    onSearchTextChanged: (String) -> Unit,
-    onSearchClick: () -> Unit,
-    onResume: () -> Unit,
-    onNavigate: (ChronicleDto?) -> Unit,
-    onOrderChange: (NChronicleOrder) -> Unit
+fun ChronicleListItem(
+    chronicleDto: ChronicleDto,
+    onItemClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TextField(
-                value = searchText, onValueChange = { text ->
-                    onSearchTextChanged(text)
-                }, modifier = Modifier.fillMaxWidth(), placeholder = {
-                    Text(text = "Search")
-                }, trailingIcon = {
-                    Icon(imageVector = Icons.Default.Search, "", modifier = Modifier.clickable {
-                        onSearchClick()
-                    })
-                })
-            OrderSection(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 15.dp),
-                chronicleOrder = screenState.chronicleOrder,
-                onOrderChange ={
-                    onOrderChange(it)
-                }
-            )
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                if (screenState.isSearchingChronicle) {
-                    item {
-                        Text(text = "Searching...", color = Color.White, fontSize = 22.sp)
-                    }
-                }
-                items(screenState.chronicles) { chronicle ->
-                    ChronicleListItem(chronicleDto = chronicle) {
-                        onChronicleClick(chronicle)
-                    }
-                    Divider(color = Color.Black)
-                }
-            }
-        }
-        FloatingActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 20.dp),
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            onClick = {
-                onAddItemClick()
-            })
-        {
-            Icon(imageVector = Icons.Default.Edit, contentDescription = "")
-        }
-
-        if (screenState.isLoading) {
-            CircularProgressIndicator()
-        }
-
-        val lifecycleOwner = LocalLifecycleOwner.current
-
-        /*DisposableEffect(key1 = lifecycleOwner){
-            val observer = LifecycleEventObserver{_,event->
-                if (event == Lifecycle.Event.ON_RESUME){
-                    onResume()
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer = observer)
-
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
-            }
-        }*/
-
-        LaunchedEffect(key1 = lifecycleOwner.lifecycle) {
-            lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                onResume()
-            }
-        }
-
-        ObserveAsEvents(flow = events) { event ->
-            when (event) {
-                ListScreenNavigationEvents.NavigateToAddScreen -> {
-                    onNavigate(null)
-                }
-
-                is ListScreenNavigationEvents.NavigateToUpdateScreen -> {
-                    onNavigate(event.chronicleDto)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ChronicleListItem(chronicleDto: ChronicleDto, onChronicleClick: () -> Unit) {
-    var showDate by remember {
-        mutableStateOf(false)
-    }
     Row(
         modifier = Modifier
             .fillMaxSize()
             .clickable {
-                onChronicleClick()
+                onItemClick()
             },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
+
         Text(
             text = chronicleDto.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             fontSize = 22.sp,
             color = Color.DarkGray,
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier
+                .padding(20.dp)
+                .weight(1.5f)
         )
 
-        if (showDate) {
-            Text(
-                text = chronicleDto.date,
-                fontSize = 15.sp,
-                color = Color.Black,
-                modifier = Modifier
-                    .padding(20.dp)
-                    .clickable {
-                        showDate = false
+        Text(
+            text = chronicleDto.date,
+            fontSize = 15.sp,
+            color = Color.Black,
+            modifier = Modifier
+                .padding(20.dp)
+                .weight(2f)
+        )
+
+        CustomDropDownMenu(
+            Modifier.weight(0.5f),
+            menuItems = listOf(DropDownItems.Delete),
+            onItemClick = {
+                when(it){
+                    DropDownItems.Delete -> {
+                        onDeleteClick()
                     }
-            )
-        } else {
-            IconButton(onClick = {
-                showDate = true
-            }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "",
-                    tint = Color.Black
-                )
+                    DropDownItems.Something1 -> {}
+                    DropDownItems.Something2 -> {}
+                }
+            }
+        )
+    }
+}
+@Preview(
+    showBackground = true,
+    heightDp = 80
+)
+@Composable
+fun PreviewChronicleListItem() {
+    val fakeDto = ChronicleDto(
+        id = 1488,
+        title = "Fake title title title ",
+        content = "Fake content",
+        date = "08/1/2023/11:11:11"
+    )
+    ChronicleListItem(
+        chronicleDto = fakeDto,
+        onDeleteClick = {},
+        onItemClick = {}
+    )
+}
+
+sealed class DropDownItems{
+    object Delete:DropDownItems()
+    object Something1:DropDownItems()
+    object Something2:DropDownItems()
+}
+
+@Composable
+fun CustomDropDownMenu(modifier: Modifier = Modifier, menuItems: List<DropDownItems>, onItemClick: (DropDownItems) -> Unit){
+    val context = LocalContext.current
+    var expanded by remember { mutableStateOf(false) }
+    Box(modifier = modifier.fillMaxWidth()) {
+        IconButton(onClick = {
+            expanded = !expanded
+        }) {
+            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            menuItems.forEach {
+                when(it){
+                    is DropDownItems.Delete -> {
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                onItemClick(it)
+                            }
+                        )
+                    }
+                    is DropDownItems.Something1 -> {
+                        DropdownMenuItem(
+                            text = { Text("Something1") },
+                            onClick = {
+                                Toast.makeText(context, "Something1", Toast.LENGTH_SHORT).show()
+                                onItemClick(it)
+                            }
+                        )
+                    }
+                    is DropDownItems.Something2 -> {
+                        DropdownMenuItem(
+                            text = { Text("Something2") },
+                            onClick = {
+                                Toast.makeText(context, "Something2", Toast.LENGTH_SHORT).show()
+                                onItemClick(it)
+                            }
+                        )
+                    }
+                }
             }
         }
-
     }
 }
 
 @Composable
 fun OrderSection(
     modifier: Modifier = Modifier,
-    chronicleOrder: NChronicleOrder = NChronicleOrder.Date(
-        NOrderType.Descending
+    chronicleOrder: ChronicleOrder = ChronicleOrder.Date(
+        OrderType.Descending
     ),
-    onOrderChange: (NChronicleOrder) -> Unit
+    onOrderChange: (ChronicleOrder) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -270,14 +181,14 @@ fun OrderSection(
         ) {
             DefaultRadioButton(
                 text = "Title",
-                selected = chronicleOrder is NChronicleOrder.Title,
-                onSelect = { onOrderChange(NChronicleOrder.Title(chronicleOrder.nOrderType)) }
+                selected = chronicleOrder is ChronicleOrder.Title,
+                onSelect = { onOrderChange(ChronicleOrder.Title(chronicleOrder.orderType)) }
             )
             Spacer(modifier = Modifier.width(8.dp))
             DefaultRadioButton(
                 text = "Date",
-                selected = chronicleOrder is NChronicleOrder.Date,
-                onSelect = { onOrderChange(NChronicleOrder.Date(chronicleOrder.nOrderType)) }
+                selected = chronicleOrder is ChronicleOrder.Date,
+                onSelect = { onOrderChange(ChronicleOrder.Date(chronicleOrder.orderType)) }
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -287,17 +198,17 @@ fun OrderSection(
         ) {
             DefaultRadioButton(
                 text = "Ascending",
-                selected = chronicleOrder.nOrderType is NOrderType.Ascending,
+                selected = chronicleOrder.orderType is OrderType.Ascending,
                 onSelect = {
-                    onOrderChange(chronicleOrder.copy(NOrderType.Ascending))
+                    onOrderChange(chronicleOrder.copy(OrderType.Ascending))
                 }
             )
             Spacer(modifier = Modifier.width(8.dp))
             DefaultRadioButton(
                 text = "Descending",
-                selected = chronicleOrder.nOrderType is NOrderType.Descending,
+                selected = chronicleOrder.orderType is OrderType.Descending,
                 onSelect = {
-                    onOrderChange(chronicleOrder.copy(NOrderType.Descending))
+                    onOrderChange(chronicleOrder.copy(OrderType.Descending))
                 }
             )
         }

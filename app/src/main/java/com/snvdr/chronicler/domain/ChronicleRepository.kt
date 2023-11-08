@@ -10,8 +10,9 @@ interface ChronicleRepository {
     fun updateChronicle(chronicleDto: ChronicleDto):Flow<DataHandler<Unit>>
     fun deleteAllChronicles(): Flow<DataHandler<Unit>>
     fun deleteSpecificChronicle(chronicleDto: ChronicleDto): Flow<DataHandler<Unit>>
+    fun deleteSpecificChronicleById(id:Long): Flow<DataHandler<Unit>>
     fun searchDatabase(query:String):Flow<DataHandler<List<ChronicleDto>>>
-    fun getChroniclesCustomQuery(chronicleOrder: ChronicleOrder, orderType: OrderType):Flow<DataHandler<List<ChronicleDto>>>
-    fun newGetChroniclesCustomQuery(nChronicleOrder: NChronicleOrder):Flow<DataHandler<List<ChronicleDto>>>
+    fun searchDatabaseWithOrder(query:String, chronicleOrder: ChronicleOrder):Flow<DataHandler<List<ChronicleDto>>>
+    fun getChroniclesWithOrder(chronicleOrder: ChronicleOrder):Flow<DataHandler<List<ChronicleDto>>>
 
 }

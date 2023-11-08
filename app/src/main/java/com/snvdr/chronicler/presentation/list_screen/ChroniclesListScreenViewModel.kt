@@ -8,11 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.snvdr.chronicler.domain.ChronicleDto
 import com.snvdr.chronicler.domain.ChronicleOrder
 import com.snvdr.chronicler.domain.ChronicleRepository
-import com.snvdr.chronicler.domain.NChronicleOrder
-import com.snvdr.chronicler.domain.OrderType
-import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithCustomQuery
+import com.snvdr.chronicler.domain.use_cases.DeleteChronicleUseCase
+import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithOrder
+import com.snvdr.chronicler.domain.use_cases.SearchChroniclesWithOrderUseCase
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -27,50 +25,67 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainScreenViewModel @Inject constructor(
-    private val createChronicleUseCase: CreateChronicleUseCase,
-    private val getAllChroniclesUseCase: GetAllChroniclesUseCase,
-    private val getAllChroniclesWithCustomQueryUseCase: GetAllChroniclesWithCustomQuery,
-    private val chronicleRepository: ChronicleRepository
+class ChroniclesListScreenViewModel @Inject constructor(
+    private val getAllChroniclesWithOrder: GetAllChroniclesWithOrder,
+    private val deleteChronicleUseCase: DeleteChronicleUseCase,
+    private val searchChroniclesWithOrderUseCase: SearchChroniclesWithOrderUseCase
 ) : ViewModel() {
 
-    private val _chroniclesListScreenState = mutableStateOf(ChroniclesListScreenState())
-    val chroniclesListScreenState: State<ChroniclesListScreenState> = _chroniclesListScreenState
+    private val _screenState = mutableStateOf(ChroniclesListScreenState())
+    val screenState: State<ChroniclesListScreenState> = _screenState
 
     private val navigationChannel = Channel<ListScreenNavigationEvents>()
     val listScreenNavigationEventsChannelFlow: Flow<ListScreenNavigationEvents> =
         navigationChannel.receiveAsFlow()
 
-    private val _searchText = MutableStateFlow("")
-    val searchText = _searchText.asStateFlow()
-
     private var getChroniclesJob: Job? = null
-
-
+    private var getChroniclesWithQueryJob: Job? = null
     fun onEvent(event: ListScreenEvents){
         when(event){
+            is ListScreenEvents.GetChronicles ->{
+                getAllChronicles()
+            }
             is ListScreenEvents.DeleteChronicle ->{
-
+                deleteChronicle(event.chronicleDto.id)
             }
             is ListScreenEvents.Order ->{
-                if (chroniclesListScreenState.value.chronicleOrder::class == event.chronicleOrder::class &&
-                    chroniclesListScreenState.value.chronicleOrder.nOrderType == event.chronicleOrder.nOrderType){
+                if (screenState.value.chronicleOrder::class == event.chronicleOrder::class &&
+                    screenState.value.chronicleOrder.orderType == event.chronicleOrder.orderType){
                     return
                 }
-                newGetAllChroniclesWithCustomQuery(nChronicleOrder = event.chronicleOrder)
+                if (screenState.value.isSearching && screenState.value.searchText.isNotEmpty()){
+                    searchChroniclesByQuery(chronicleOrder = event.chronicleOrder)
+                }else{
+                    getAllChronicles(chronicleOrder = event.chronicleOrder)
+                }
             }
             is ListScreenEvents.SwitchOrderSection -> {
-                _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                    isOrderSectionVisible = !chroniclesListScreenState.value.isOrderSectionVisible
+                _screenState.value = screenState.value.copy(
+                    isOrderSectionVisible = !screenState.value.isOrderSectionVisible
                 )
+            }
+
+            is ListScreenEvents.SearchTextChange -> {
+                onSearchTextChange(text = event.text)
+            }
+
+            ListScreenEvents.SearchByQuery -> {
+                searchChroniclesByQuery()
             }
         }
     }
-    fun searchChroniclesByQuery() {
-        chronicleRepository.searchDatabase(query = _searchText.value).onEach {
+    private fun searchChroniclesByQuery(chronicleOrder:ChronicleOrder = screenState.value.chronicleOrder) {
+        getChroniclesWithQueryJob?.cancel()
+        getChroniclesWithQueryJob = searchChroniclesWithOrderUseCase(
+            query = screenState.value.searchText,
+            chronicleOrder = chronicleOrder
+        ).onEach {
+            _screenState.value = screenState.value.copy(
+                chronicleOrder = chronicleOrder
+            )
             when (it) {
                 is DataHandler.Error -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
                         isError = it.message ?: "Unknown error",
                         chronicles = emptyList()
@@ -78,7 +93,7 @@ class MainScreenViewModel @Inject constructor(
                 }
 
                 is DataHandler.Loading -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = true,
                         isError = null,
                         chronicles = emptyList()
@@ -86,9 +101,7 @@ class MainScreenViewModel @Inject constructor(
                 }
 
                 is DataHandler.Success -> {
-                    Log.d("SEARCH_LOG", "Result is:${it.data}")
-                    //  getChronicles()
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
                         isError = null,
                         chronicles = it.data ?: emptyList()
@@ -97,39 +110,43 @@ class MainScreenViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
-    fun onSearchTextChange(text: String) {
-        _searchText.value = text
-        if (_searchText.value.isNotEmpty()) {
-            _chroniclesListScreenState.value = _chroniclesListScreenState.value.copy(
-                isSearchingChronicle = true,
+    private fun onSearchTextChange(text: String) {
+        _screenState.value = screenState.value.copy(
+            searchText = text
+        )
+        if (screenState.value.searchText.isNotEmpty()){
+            _screenState.value = screenState.value.copy(
+                isSearching = true,
                 chronicles = emptyList()
             )
-        } else {
-            _chroniclesListScreenState.value = _chroniclesListScreenState.value.copy(
-                isSearchingChronicle = false
+        }else{
+            _screenState.value = screenState.value.copy(
+                isSearching = false
             )
+            getAllChronicles(screenState.value.chronicleOrder)
         }
     }
-    fun navigateToAnotherScreen(chronicleDto: ChronicleDto?) = viewModelScope.launch {
+    fun onNavigateEvent(chronicleDto: ChronicleDto?) = viewModelScope.launch {
         if (chronicleDto != null) {
             navigationChannel.send(ListScreenNavigationEvents.NavigateToUpdateScreen(chronicleDto = chronicleDto))
         } else {
             navigationChannel.send(ListScreenNavigationEvents.NavigateToAddScreen)
         }
     }
-    fun getAllChroniclesWithCustomQuery(
-        chronicleOrder: ChronicleOrder = ChronicleOrder.date,
-        orderType: OrderType = OrderType.DESC
+    private fun getAllChronicles(
+        chronicleOrder: ChronicleOrder = screenState.value.chronicleOrder
     ) {
         Log.d("ROOM_LOG","ViewModel getAllChroniclesWithCustomQuery")
-
-        getAllChroniclesWithCustomQueryUseCase(
-           chronicleOrder = chronicleOrder,
-            orderType = orderType
+        getChroniclesJob?.cancel()
+        getChroniclesJob = getAllChroniclesWithOrder(
+          chronicleOrder = chronicleOrder
         ).onEach { chronicle ->
+            _screenState.value = screenState.value.copy(
+                chronicleOrder = chronicleOrder
+            )
             when (chronicle) {
                 is DataHandler.Error -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
                         isError = chronicle.message ?: "Unknown error",
                         chronicles = emptyList()
@@ -137,7 +154,7 @@ class MainScreenViewModel @Inject constructor(
                 }
 
                 is DataHandler.Loading -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = true,
                         isError = null,
                         chronicles = emptyList()
@@ -145,7 +162,7 @@ class MainScreenViewModel @Inject constructor(
                 }
 
                 is DataHandler.Success -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
                         isError = null,
                         chronicles = chronicle.data ?: emptyList()
@@ -154,41 +171,29 @@ class MainScreenViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
-
-    fun newGetAllChroniclesWithCustomQuery(
-       nChronicleOrder: NChronicleOrder
-    ) {
-        Log.d("ROOM_LOG","ViewModel getAllChroniclesWithCustomQuery")
-        getChroniclesJob?.cancel()
-        getChroniclesJob = chronicleRepository.newGetChroniclesCustomQuery(
-          nChronicleOrder = nChronicleOrder
-        ).onEach { chronicle ->
-            _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
-                chronicleOrder = nChronicleOrder
-            )
-            when (chronicle) {
+    private fun deleteChronicle(id:Long){
+        deleteChronicleUseCase(id = id).onEach {
+            when(it){
                 is DataHandler.Error -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
-                        isError = chronicle.message ?: "Unknown error",
-                        chronicles = emptyList()
+                        isError = it.message ?: "Unknown error",
                     )
                 }
 
                 is DataHandler.Loading -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = true,
                         isError = null,
-                        chronicles = emptyList()
                     )
                 }
 
                 is DataHandler.Success -> {
-                    _chroniclesListScreenState.value = chroniclesListScreenState.value.copy(
+                    _screenState.value = screenState.value.copy(
                         isLoading = false,
                         isError = null,
-                        chronicles = chronicle.data ?: emptyList()
                     )
+                    getAllChroniclesWithOrder(chronicleOrder = screenState.value.chronicleOrder)
                 }
             }
         }.launchIn(viewModelScope)

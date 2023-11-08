@@ -2,6 +2,7 @@ package com.snvdr.chronicler.di
 
 import android.content.Context
 import androidx.room.Room
+import com.snvdr.chronicler.audio.db.AudioRecordDatabase
 import com.snvdr.chronicler.data.database.ChronicleDatabase
 import dagger.Module
 import dagger.Provides
@@ -21,6 +22,14 @@ object RoomModule {
 
     @Singleton
     @Provides
+    fun providesAudioRecordDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(context, AudioRecordDatabase::class.java, "audio_database").allowMainThreadQueries().build()
+
+    @Singleton
+    @Provides
     fun providesChroniclesDao(database: ChronicleDatabase) = database.getChronicleDao()
 
+    @Singleton
+    @Provides
+    fun providesAudioRecordDao(database: AudioRecordDatabase) = database.audioRecordDAO()
 }

@@ -4,9 +4,10 @@ import com.snvdr.chronicler.data.ChronicleRepositoryImpl
 import com.snvdr.chronicler.data.database.ChronicleDao
 import com.snvdr.chronicler.domain.ChronicleRepository
 import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithCustomQuery
+import com.snvdr.chronicler.domain.use_cases.DeleteChronicleUseCase
 import com.snvdr.chronicler.domain.use_cases.GetChronicleByIdUseCase
+import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithOrder
+import com.snvdr.chronicler.domain.use_cases.SearchChroniclesWithOrderUseCase
 import com.snvdr.chronicler.domain.use_cases.UpdateChronicleUseCase
 import dagger.Module
 import dagger.Provides
@@ -26,18 +27,21 @@ object ChronicleModule {
         CreateChronicleUseCase(chronicleRepository = chronicleRepository)
 
     @Provides
-    fun providesGetAllChroniclesUseCase(chronicleRepository: ChronicleRepository) =
-        GetAllChroniclesUseCase(chronicleRepository = chronicleRepository)
-
-    @Provides
     fun providesGetChronicleByIdUseCase(chronicleRepository: ChronicleRepository) =
         GetChronicleByIdUseCase(chronicleRepository = chronicleRepository)
 
     @Provides
     fun providesUpdateChronicleUseCase(chronicleRepository: ChronicleRepository) =
         UpdateChronicleUseCase(chronicleRepository = chronicleRepository)
+
     @Provides
     fun providesGetAllChroniclesWithCustomQuery(chronicleRepository: ChronicleRepository) =
-        GetAllChroniclesWithCustomQuery(chronicleRepository = chronicleRepository)
+        GetAllChroniclesWithOrder(chronicleRepository = chronicleRepository)
+    @Provides
+    fun providesDeleteChronicleUseCase(chronicleRepository: ChronicleRepository) =
+        DeleteChronicleUseCase(chronicleRepository = chronicleRepository)
+    @Provides
+    fun provideSearchChroniclesWithOrderUseCase(chronicleRepository: ChronicleRepository) =
+        SearchChroniclesWithOrderUseCase(chronicleRepository = chronicleRepository)
 
 }

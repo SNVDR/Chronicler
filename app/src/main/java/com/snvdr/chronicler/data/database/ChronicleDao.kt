@@ -27,9 +27,16 @@ interface ChronicleDao {
 
     @Delete
     suspend fun deleteSpecificChronicle(chronicle: ChronicleDbEntity)
+    @Query("DELETE FROM chronicle_table WHERE id=:id")
+    suspend fun deleteSpecificChronicleById(id: Long)
 
     @Query("SELECT * FROM chronicle_table WHERE title LIKE :query")
     suspend fun searchDatabase(query:String):List<ChronicleDbEntity>
+    @Query("SELECT * FROM chronicle_table WHERE title LIKE :query ORDER by CASE WHEN :chronicleOrder = 'date' THEN date END ASC , CASE WHEN :chronicleOrder = 'title' THEN title END ASC")
+    suspend fun searchDatabaseWithOrderAndAsc(query:String, chronicleOrder: String):List<ChronicleDbEntity>
+
+    @Query("SELECT * FROM chronicle_table WHERE title LIKE :query ORDER by CASE WHEN :chronicleOrder = 'date' THEN date END DESC , CASE WHEN :chronicleOrder = 'title' THEN title END DESC")
+    suspend fun searchDatabaseWithOrderAndDesc(query:String, chronicleOrder: String):List<ChronicleDbEntity>
 
     @Query("SELECT * FROM chronicle_table ORDER by date DESC")
     suspend fun getLatestChronicles():List<ChronicleDbEntity>

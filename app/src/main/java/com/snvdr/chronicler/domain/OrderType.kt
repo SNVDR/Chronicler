@@ -1,5 +1,5 @@
 package com.snvdr.chronicler.domain
-
-enum class OrderType {
-    ASC,DESC
-}
+ sealed interface OrderType{
+     object Ascending:OrderType
+     object Descending:OrderType
+ }

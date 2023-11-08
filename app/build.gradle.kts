@@ -66,6 +66,8 @@ android {
 dependencies {
 
     implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.10.0")
     ksp("io.github.raamcosta.compose-destinations:ksp:1.1.2-beta"   )
     // Compose dependencies
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha03")
