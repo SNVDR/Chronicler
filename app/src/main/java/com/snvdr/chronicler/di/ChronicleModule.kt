@@ -1,14 +1,14 @@
 package com.snvdr.chronicler.di
 
-import com.snvdr.chronicler.data.ChronicleRepositoryImpl
-import com.snvdr.chronicler.data.database.ChronicleDao
-import com.snvdr.chronicler.domain.ChronicleRepository
-import com.snvdr.chronicler.domain.use_cases.CreateChronicleUseCase
-import com.snvdr.chronicler.domain.use_cases.DeleteChronicleUseCase
-import com.snvdr.chronicler.domain.use_cases.GetChronicleByIdUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithOrder
-import com.snvdr.chronicler.domain.use_cases.SearchChroniclesWithOrderUseCase
-import com.snvdr.chronicler.domain.use_cases.UpdateChronicleUseCase
+import com.snvdr.chronicler.data.chronicle.ChronicleRepositoryImpl
+import com.snvdr.chronicler.data.chronicle.database.ChronicleDao
+import com.snvdr.chronicler.domain.chronicle.ChronicleRepository
+import com.snvdr.chronicler.domain.chronicle.use_cases.CreateChronicleUseCase
+import com.snvdr.chronicler.domain.chronicle.use_cases.DeleteChronicleUseCase
+import com.snvdr.chronicler.domain.chronicle.use_cases.GetChronicleByIdUseCase
+import com.snvdr.chronicler.domain.chronicle.use_cases.GetAllChroniclesWithOrder
+import com.snvdr.chronicler.domain.chronicle.use_cases.SearchChroniclesWithOrderUseCase
+import com.snvdr.chronicler.domain.chronicle.use_cases.UpdateChronicleUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,7 +19,7 @@ import dagger.hilt.android.components.ViewModelComponent
 object ChronicleModule {
 
     @Provides
-    fun providesChronicleRepository(dao: ChronicleDao):ChronicleRepository =
+    fun providesChronicleRepository(dao: ChronicleDao): ChronicleRepository =
         ChronicleRepositoryImpl(dao = dao)
 
     @Provides

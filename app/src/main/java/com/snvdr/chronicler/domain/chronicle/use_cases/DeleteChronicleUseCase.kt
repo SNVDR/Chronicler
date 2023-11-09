@@ -1,6 +1,6 @@
-package com.snvdr.chronicler.domain.use_cases
+package com.snvdr.chronicler.domain.chronicle.use_cases
 
-import com.snvdr.chronicler.domain.ChronicleRepository
+import com.snvdr.chronicler.domain.chronicle.ChronicleRepository
 import com.snvdr.chronicler.utils.DataHandler
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

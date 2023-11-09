@@ -5,19 +5,16 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.snvdr.chronicler.domain.ChronicleDto
-import com.snvdr.chronicler.domain.ChronicleOrder
-import com.snvdr.chronicler.domain.ChronicleRepository
-import com.snvdr.chronicler.domain.use_cases.DeleteChronicleUseCase
-import com.snvdr.chronicler.domain.use_cases.GetAllChroniclesWithOrder
-import com.snvdr.chronicler.domain.use_cases.SearchChroniclesWithOrderUseCase
+import com.snvdr.chronicler.domain.chronicle.ChronicleDto
+import com.snvdr.chronicler.domain.chronicle.ChronicleOrder
+import com.snvdr.chronicler.domain.chronicle.use_cases.DeleteChronicleUseCase
+import com.snvdr.chronicler.domain.chronicle.use_cases.GetAllChroniclesWithOrder
+import com.snvdr.chronicler.domain.chronicle.use_cases.SearchChroniclesWithOrderUseCase
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -74,7 +71,7 @@ class ChroniclesListScreenViewModel @Inject constructor(
             }
         }
     }
-    private fun searchChroniclesByQuery(chronicleOrder:ChronicleOrder = screenState.value.chronicleOrder) {
+    private fun searchChroniclesByQuery(chronicleOrder: ChronicleOrder = screenState.value.chronicleOrder) {
         getChroniclesWithQueryJob?.cancel()
         getChroniclesWithQueryJob = searchChroniclesWithOrderUseCase(
             query = screenState.value.searchText,

@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.domain
+package com.snvdr.chronicler.domain.chronicle
 
 data class SaveChronicleModel(
     val title:String,

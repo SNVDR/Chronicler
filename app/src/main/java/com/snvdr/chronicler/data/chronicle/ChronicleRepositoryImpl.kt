@@ -1,14 +1,14 @@
-package com.snvdr.chronicler.data
+package com.snvdr.chronicler.data.chronicle
 
-import com.snvdr.chronicler.data.database.ChronicleDao
-import com.snvdr.chronicler.data.database.ChronicleDbEntity
-import com.snvdr.chronicler.domain.ChronicleDto
-import com.snvdr.chronicler.domain.ChronicleRepository
-import com.snvdr.chronicler.domain.ChronicleOrder
-import com.snvdr.chronicler.domain.OrderType
-import com.snvdr.chronicler.domain.SaveChronicleModel
-import com.snvdr.chronicler.domain.toChronicleDbEntity
-import com.snvdr.chronicler.domain.toChronicleDto
+import com.snvdr.chronicler.data.chronicle.database.ChronicleDao
+import com.snvdr.chronicler.data.chronicle.database.ChronicleDbEntity
+import com.snvdr.chronicler.domain.chronicle.ChronicleDto
+import com.snvdr.chronicler.domain.chronicle.ChronicleRepository
+import com.snvdr.chronicler.domain.chronicle.ChronicleOrder
+import com.snvdr.chronicler.domain.chronicle.OrderType
+import com.snvdr.chronicler.domain.chronicle.SaveChronicleModel
+import com.snvdr.chronicler.domain.chronicle.toChronicleDbEntity
+import com.snvdr.chronicler.domain.chronicle.toChronicleDto
 import com.snvdr.chronicler.utils.DataHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -156,12 +156,12 @@ class ChronicleRepositoryImpl @Inject constructor(
                 OrderType.Ascending -> {
                     when(chronicleOrder){
                         is ChronicleOrder.Date -> {
-                            dao.getAllChroniclesWithOrderAndAsc("date").map {
+                            dao.getChroniclesWithOrderAndAsc("date").map {
                                 it.toChronicleDto()
                             }
                         }
                         is ChronicleOrder.Title -> {
-                            dao.getAllChroniclesWithOrderAndAsc("title").map {
+                            dao.getChroniclesWithOrderAndAsc("title").map {
                                 it.toChronicleDto()
                             }
                         }
@@ -170,12 +170,12 @@ class ChronicleRepositoryImpl @Inject constructor(
                 OrderType.Descending -> {
                     when(chronicleOrder){
                         is ChronicleOrder.Date -> {
-                            dao.getAllChroniclesWithOrderAndDesc("date").map {
+                            dao.getChroniclesWithOrderAndDesc("date").map {
                                 it.toChronicleDto()
                             }
                         }
                         is ChronicleOrder.Title -> {
-                            dao.getAllChroniclesWithOrderAndDesc("title").map {
+                            dao.getChroniclesWithOrderAndDesc("title").map {
                                 it.toChronicleDto()
                             }
                         }

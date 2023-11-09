@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.audio
+package com.snvdr.chronicler.domain.audio
 
 import java.io.File
 

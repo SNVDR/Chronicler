@@ -2,8 +2,8 @@ package com.snvdr.chronicler.di
 
 import android.content.Context
 import androidx.room.Room
-import com.snvdr.chronicler.audio.db.AudioRecordDatabase
-import com.snvdr.chronicler.data.database.ChronicleDatabase
+import com.snvdr.chronicler.data.audio_record.database.AudioRecordDatabase
+import com.snvdr.chronicler.data.chronicle.database.ChronicleDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RoomModule {
+object DatabaseModule {
 
     @Singleton
     @Provides

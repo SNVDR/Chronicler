@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.domain
+package com.snvdr.chronicler.domain.chronicle
 
 import com.snvdr.chronicler.utils.DataHandler
 import kotlinx.coroutines.flow.Flow

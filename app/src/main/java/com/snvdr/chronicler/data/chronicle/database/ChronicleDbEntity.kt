@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.data.database
+package com.snvdr.chronicler.data.chronicle.database
 
 import android.os.Parcelable
 import androidx.room.Entity

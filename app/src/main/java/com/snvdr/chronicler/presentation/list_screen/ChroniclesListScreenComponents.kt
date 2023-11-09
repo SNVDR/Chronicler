@@ -1,7 +1,6 @@
 package com.snvdr.chronicler.presentation.list_screen
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -37,9 +35,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.snvdr.chronicler.domain.ChronicleDto
-import com.snvdr.chronicler.domain.ChronicleOrder
-import com.snvdr.chronicler.domain.OrderType
+import com.snvdr.chronicler.domain.chronicle.ChronicleDto
+import com.snvdr.chronicler.domain.chronicle.ChronicleOrder
+import com.snvdr.chronicler.domain.chronicle.OrderType
 
 @Composable
 fun ChronicleListItem(

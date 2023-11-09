@@ -1,6 +1,6 @@
-package com.snvdr.chronicler.domain
+package com.snvdr.chronicler.domain.chronicle
 
-import com.snvdr.chronicler.data.database.ChronicleDbEntity
+import com.snvdr.chronicler.data.chronicle.database.ChronicleDbEntity
 
 data class ChronicleDto(
     val id:Long,
@@ -9,10 +9,10 @@ data class ChronicleDto(
     val date: String,
 )
 
-fun ChronicleDbEntity.toChronicleDto():ChronicleDto{
+fun ChronicleDbEntity.toChronicleDto(): ChronicleDto {
     return ChronicleDto(id = id, title = title, content = content, date = this.createdDateFormatted)
 }
 
-fun ChronicleDto.toChronicleDbEntity():ChronicleDbEntity{
+fun ChronicleDto.toChronicleDbEntity(): ChronicleDbEntity {
     return ChronicleDbEntity(id = id, title = title, content = content)
 }

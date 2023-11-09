@@ -1,14 +1,15 @@
-package com.snvdr.chronicler.audio
+package com.snvdr.chronicler.data.audio_record
 
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import com.snvdr.chronicler.domain.audio.AudioRecorder
 import java.io.File
 import java.io.FileOutputStream
 
 class AndroidAudioRecorder(
     private val context:Context
-):AudioRecorder {
+): AudioRecorder {
     private var recorder:MediaRecorder? = null
     private fun createRecorder():MediaRecorder{
         return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){

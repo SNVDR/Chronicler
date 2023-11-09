@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.data.database
+package com.snvdr.chronicler.data.chronicle.database
 
 import androidx.room.TypeConverter
 import java.time.LocalDateTime
