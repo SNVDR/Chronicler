@@ -3,7 +3,7 @@ package com.snvdr.chronicler.data.audio_record
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
-import com.snvdr.chronicler.domain.audio.AudioRecorder
+import com.snvdr.chronicler.domain.audio_recorder.AudioRecorder
 import java.io.File
 import java.io.FileOutputStream
 

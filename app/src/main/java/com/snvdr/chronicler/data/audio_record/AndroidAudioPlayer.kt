@@ -3,7 +3,7 @@ package com.snvdr.chronicler.data.audio_record
 import android.content.Context
 import android.media.MediaPlayer
 import androidx.core.net.toUri
-import com.snvdr.chronicler.domain.audio.AudioPlayer
+import com.snvdr.chronicler.domain.audio_recorder.AudioPlayer
 import java.io.File
 
 class AndroidAudioPlayer(private val context: Context): AudioPlayer {
