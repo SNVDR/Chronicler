@@ -1,4 +1,4 @@
-package com.snvdr.chronicler.domain.chronicle.data.repository
+package com.snvdr.chronicler.domain.chronicle.old_maybe_delete.data.repository
 
 import com.snvdr.chronicler.domain.chronicle.ChronicleDto
 import com.snvdr.chronicler.domain.chronicle.ChronicleOrder
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-class NewFakeChronicleRepository : ChronicleRepository {
+class FakeChronicleRepository : ChronicleRepository {
 
     private val chronicleItems = mutableListOf<ChronicleDto>()
     override fun createChronicle(saveChronicleModel: SaveChronicleModel): Flow<DataHandler<Unit>> =
