@@ -8,53 +8,67 @@ import com.snvdr.chronicler.utils.DataHandler
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import org.junit.Before
 import org.junit.Test
 
+
 class CreateChronicleUseCaseTest {
+    private lateinit var createChronicleUseCase: CreateChronicleUseCase
+    private val mockChronicleRepository = mockk<ChronicleRepository>()
 
-    private val fakeRepository = mockk<ChronicleRepository>()
-
-    @Test
-    fun `pass empty title should emit error and doesn't call repository`() = runBlocking{
-        val errorSaveModel = SaveChronicleModel(title = "", content = "")
-
-        val useCase = CreateChronicleUseCase(chronicleRepository = fakeRepository)
-
-        useCase(saveChronicleModel = errorSaveModel).test {
-            val errorItem = awaitItem()
-            assertThat(errorItem).isInstanceOf(DataHandler.Error::class.java)
-            assertThat(errorItem.message).isEqualTo("Title can't be empty")
-
-            awaitComplete()
-        }
-
-        coVerify (exactly = 0){fakeRepository.createChronicle(saveChronicleModel = errorSaveModel)}
+    @Before
+    fun setup() {
+        createChronicleUseCase = CreateChronicleUseCase(mockChronicleRepository)
     }
 
     @Test
-    fun `pass correct save model should call repository and return success`() = runBlocking(){
-        val correctSaveModel = SaveChronicleModel(title = "SS", content = "SS")
-
-        val useCase = CreateChronicleUseCase(chronicleRepository = fakeRepository)
-
-        coEvery { fakeRepository.createChronicle(saveChronicleModel = correctSaveModel) } returns flow {
-            emit(DataHandler.Loading())
-            emit(DataHandler.Success(Unit))
-        }
-
-        useCase(saveChronicleModel = correctSaveModel).test {
-            val loadingItem = awaitItem()
-            assertThat(loadingItem).isInstanceOf(DataHandler.Loading::class.java)
-
-            val successItem = awaitItem()
-            assertThat(successItem).isInstanceOf(DataHandler.Success::class.java)
-
+    fun `successfully chronicle creation`() = runBlocking {
+        val saveChronicleModel = SaveChronicleModel(
+            title = "Title", content = "Content"
+        )
+        coEvery { mockChronicleRepository.createChronicle(saveChronicleModel = saveChronicleModel) } returns flowOf(
+            DataHandler.Success(Unit)
+        )
+        createChronicleUseCase(saveChronicleModel = saveChronicleModel).test {
+            assertThat(awaitItem()).isInstanceOf(DataHandler.Success::class.java)
             awaitComplete()
         }
 
-        coVerify(){fakeRepository.createChronicle(saveChronicleModel = correctSaveModel)}
+        coVerify { mockChronicleRepository.createChronicle(saveChronicleModel = saveChronicleModel) }
     }
 
+    @Test
+    fun `emit error from use case if title is empty`() = runBlocking {
+        val errorSaveChronicleModel = SaveChronicleModel(
+            title = "", content = "Content"
+        )
+        coEvery { mockChronicleRepository.createChronicle(saveChronicleModel = errorSaveChronicleModel) } returns flowOf(
+            DataHandler.Error(message = "Title can't be empty")
+        )
+        createChronicleUseCase(saveChronicleModel = errorSaveChronicleModel).test {
+            val item = awaitItem()
+            assertThat(item).isInstanceOf(DataHandler.Error::class.java)
+            assertThat(item.message).isEqualTo("Title can't be empty")
+            awaitComplete()
+        }
+        coVerify(exactly = 0) { mockChronicleRepository.createChronicle(saveChronicleModel = errorSaveChronicleModel) }
+    }
+
+    @Test
+    fun `emit create chronicle failure from repository`() = runBlocking {
+        val saveChronicleModel = SaveChronicleModel(
+            title = "Title", content = "Content"
+        )
+        coEvery { mockChronicleRepository.createChronicle(saveChronicleModel = saveChronicleModel) } returns flowOf(
+            DataHandler.Error(message = "Unknown error")
+        )
+        createChronicleUseCase(saveChronicleModel = saveChronicleModel).test {
+            assertThat(awaitItem()).isInstanceOf(DataHandler.Error::class.java)
+            awaitComplete()
+        }
+
+        coVerify { mockChronicleRepository.createChronicle(saveChronicleModel = saveChronicleModel) }
+    }
 }

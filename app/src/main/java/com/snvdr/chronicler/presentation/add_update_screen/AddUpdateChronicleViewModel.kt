@@ -8,6 +8,7 @@ import com.snvdr.chronicler.domain.chronicle.SaveChronicleModel
 import com.snvdr.chronicler.domain.chronicle.use_cases.CreateChronicleUseCase
 import com.snvdr.chronicler.domain.chronicle.use_cases.GetChronicleByIdUseCase
 import com.snvdr.chronicler.domain.chronicle.use_cases.UpdateChronicleUseCase
+import com.snvdr.chronicler.domain.chronicle.validation.ValidateTitle
 import com.snvdr.chronicler.presentation.destinations.AddUpdateScreenWrapperDestination
 import com.snvdr.chronicler.utils.DataHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,17 +26,17 @@ import javax.inject.Inject
 @HiltViewModel
 class AddUpdateChronicleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val validateTitle:ValidateTitle,
     private val updateChronicleUseCase: UpdateChronicleUseCase,
     private val getChronicleByIdUseCase: GetChronicleByIdUseCase,
     private val createChronicleUseCase: CreateChronicleUseCase
 ) : ViewModel() {
 
-    //  private val chronicleId:Long = checkNotNull(savedStateHandle["chronicleId"])
-
     private val _screenState = MutableStateFlow(AddUpdateChronicleState())
     val screenState = _screenState.asStateFlow()
 
     private val argsFromScreen = AddUpdateScreenWrapperDestination.argsFrom(savedStateHandle)
+
     private val navigationChannel = Channel<AddUpdateScreenNavigationEvents>()
     val navigationEventsChannelFlow: Flow<AddUpdateScreenNavigationEvents> = navigationChannel.receiveAsFlow()
 
@@ -129,6 +130,17 @@ class AddUpdateChronicleViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
     private fun createChronicle() {
+        val titleResult = validateTitle.execute(_screenState.value.title)
+
+        val hashError = listOf(titleResult).any { !it.success }
+
+        if (hashError){
+            _screenState.value = _screenState.value.copy(
+                titleError = titleResult.errorMessage
+            )
+            return
+        }
+
         val chronicle = SaveChronicleModel(title = _screenState.value.title, content = _screenState.value.content?:"")
         createChronicleUseCase(chronicle).onEach {
             when(it){

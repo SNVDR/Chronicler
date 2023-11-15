@@ -155,34 +155,17 @@ class ChronicleRepositoryImpl @Inject constructor(
             val list = when(chronicleOrder.orderType){
                 OrderType.Ascending -> {
                     when(chronicleOrder){
-                        is ChronicleOrder.Date -> {
-                            dao.getChroniclesWithOrderAndAsc("date").map {
-                                it.toChronicleDto()
-                            }
-                        }
-                        is ChronicleOrder.Title -> {
-                            dao.getChroniclesWithOrderAndAsc("title").map {
-                                it.toChronicleDto()
-                            }
-                        }
+                        is ChronicleOrder.Date -> { dao.getChroniclesWithOrderAndAsc("date").map { it.toChronicleDto() } }
+                        is ChronicleOrder.Title -> { dao.getChroniclesWithOrderAndAsc("title").map { it.toChronicleDto() } }
                     }
                 }
                 OrderType.Descending -> {
                     when(chronicleOrder){
-                        is ChronicleOrder.Date -> {
-                            dao.getChroniclesWithOrderAndDesc("date").map {
-                                it.toChronicleDto()
-                            }
-                        }
-                        is ChronicleOrder.Title -> {
-                            dao.getChroniclesWithOrderAndDesc("title").map {
-                                it.toChronicleDto()
-                            }
-                        }
+                        is ChronicleOrder.Date -> { dao.getChroniclesWithOrderAndDesc("date").map { it.toChronicleDto() } }
+                        is ChronicleOrder.Title -> { dao.getChroniclesWithOrderAndDesc("title").map { it.toChronicleDto() } }
                     }
                 }
             }
-
 
             emit(DataHandler.Success(data = list))
         }catch (e:Exception){

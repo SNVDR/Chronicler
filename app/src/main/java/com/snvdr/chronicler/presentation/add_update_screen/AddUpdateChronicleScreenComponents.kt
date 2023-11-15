@@ -169,6 +169,7 @@ fun AddUpdateScreen(
                 onValueChange = {
                     onScreenEvent(AddUpdateChronicleEvents.TitleChanged(it))
                 },
+                isError = screenState.titleError != null,
                 textStyle = LocalTextStyle.current.copy(fontSize = 28.sp),
                 colors = TextFieldDefaults.textFieldColors(
                     focusedIndicatorColor = Color.Transparent,

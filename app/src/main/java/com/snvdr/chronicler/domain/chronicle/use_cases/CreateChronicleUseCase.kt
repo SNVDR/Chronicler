@@ -12,25 +12,21 @@ class CreateChronicleUseCase @Inject constructor(
 ) {
 
     operator fun invoke(saveChronicleModel: SaveChronicleModel): Flow<DataHandler<Unit>> {
-        // Validate the input data
         val validationError = validateInput(saveChronicleModel)
         return if (validationError != null) {
-            // Return an error Flow if validation fails
             flow {
                 emit(DataHandler.Error(message = validationError))
             }
         } else {
-            // Call the repository function if validation passes
             chronicleRepository.createChronicle(saveChronicleModel = saveChronicleModel)
         }
     }
 
     private fun validateInput(saveChronicleModel: SaveChronicleModel): String? {
-        // Perform validation logic
         return if (saveChronicleModel.title.isEmpty()) {
             "Title can't be empty"
         } else {
-            null // Return null if validation passes
+            null
         }
     }
 
